@@ -91,6 +91,5 @@ steps:
     targetPath: "$(Agent.BuildDirectory)/aqa-tests/TKG/"
     artifactName: "TKG-results"
     publishLocation: "pipeline"
-    parallel: true
   displayName: "publish TAP report artifact"
   condition: succeededOrFailed()
