@@ -32,7 +32,7 @@ trigger:
 - main
 
 pool:
- vmImage: macos-11
+ vmImage: macOS-10.15
 
  # vmImage: ubuntu-latest
 
