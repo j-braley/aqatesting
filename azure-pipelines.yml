@@ -50,7 +50,7 @@ steps:
 - bash: |
     tar xvf apache-ant-1.10.12-bin.tar.gz && \
     tar xvf download && \
-    mv ant-contrib/lib/ant-contrib-1.0b2.jar apache-ant-1.10.12/lib/
+    mv ant-contrib/lib/ant-contrib.jar apache-ant-1.10.12/lib/
   displayName: de-compress dependencies
   workingDirectory: $(Agent.BuildDirectory)
 
