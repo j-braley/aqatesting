@@ -7,6 +7,9 @@ parameters:
   - name: target
     displayName: Test target
     type: string
+  - name: suite
+    displayName: test suite
+    type: string
   - name: runner
     displayName: Runner
     values:
@@ -18,18 +21,45 @@ parameters:
   - name: nativeLibs
     displayName: Native libs
     type: string
+  - name: binaryName
+    displayName: Binary Name
+    type: string
+  - name: testImageName
+    displayName: Native libs name
+    type: string
 
 trigger:
 - main
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: ${{ parameters.runner }}
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+- bash: |
+    wget ${{ parameters.binaries }} && wget ${{ parameters.nativeLibs }}
+  displayName: 'Download binaires'
+  workingDirectory: $(Agent.BuildDirectory)
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+- bash: |
+    tar xvf ${{ parameters.binaryName }} && \
+    tar xvf ${{ parameters.testImageName }}
+  displayName: de-compress binaires and images
+  workingDirectory: $(Agent.BuildDirectory)
+
+- bash: |
+    echo "##vso[task.setvariable variable=TEST_JDK_HOME;]$(Agent.BuildDirectory)/jdk-11.0.17+8"
+    echo "##vso[task.setvariable variable=TESTIMAGE_PATH;]$(Agent.BuildDirectory)/jdk-11.0.17+8-test-image"
+  displayName: Set JDK variables
+
+- bash: |
+    git clone --depth 1 -b v0.9.5-release https://github.com/adoptium/aqa-tests.git && \
+    cd aqa-tests/ && \
+    ./get.sh && \
+    ./compile.sh
+  displayName: Clone aqa-tests
+  env:
+    USE_TESTENV_PROPERTIES: true
+    BUILD_LIST: ${{ parameters.suite }}
+    DISPLAY: ":1"
+    JDK_IMPL: hotspot
+
