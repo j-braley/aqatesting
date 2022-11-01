@@ -43,6 +43,18 @@ steps:
   workingDirectory: $(Agent.BuildDirectory)
 
 - bash: |
+    wget https://dlcdn.apache.org//ant/binaries/apache-ant-1.10.12-bin.tar.gz && wget https://sourceforge.net/projects/ant-contrib/files/ant-contrib/ant-contrib-1.0b2/ant-contrib-1.0b2-bin.tar.gz/download
+  displayName: 'Download dependencies'
+  workingDirectory: $(Agent.BuildDirectory)
+
+- bash: |
+    tar xvf apache-ant-1.10.12-bin.tar.gz && \
+    tar xvf download && \
+    mv ant-contrib/lib/ant-contrib-1.0b2.jar apache-ant-1.10.12/lib/
+  displayName: de-compress dependencies
+  workingDirectory: $(Agent.BuildDirectory)
+
+- bash: |
     tar xvf ${{ parameters.binaryName }} && \
     tar xvf ${{ parameters.testImageName }}
   displayName: de-compress binaires and images
@@ -71,6 +83,8 @@ steps:
     BUILD_LIST: ${{ parameters.suite }}
     DISPLAY: ":1"
     JDK_IMPL: hotspot
+    ANT_HOME: $(Agent.BuildDirectory)/apache-ant-1.10.12
+    ANT_OPTS: "-Xms256M -Xmx512M"
 
 - task: PublishPipelineArtifact@1
   inputs:
