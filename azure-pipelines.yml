@@ -32,11 +32,7 @@ trigger:
 - main
 
 pool:
-${{ if eq(parameters.runner, 'macos-11') }}:
-  vmImage: macos-11
-
-${{ if eq(parameters.runner, 'ubuntu-latest') }}:
-  vmImage: ubuntu-latest
+ vmImage: macos-11
 
 steps:
 - bash: |
