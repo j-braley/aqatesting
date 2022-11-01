@@ -34,6 +34,8 @@ trigger:
 pool:
  vmImage: macos-11
 
+ # vmImage: ubuntu-latest
+
 steps:
 - bash: |
     wget ${{ parameters.binaries }} && wget ${{ parameters.nativeLibs }}
@@ -47,15 +49,22 @@ steps:
   workingDirectory: $(Agent.BuildDirectory)
 
 - bash: |
-    echo "##vso[task.setvariable variable=TEST_JDK_HOME;]$(Agent.BuildDirectory)/jdk-11.0.17+8"
+    echo "##vso[task.setvariable variable=TEST_JDK_HOME;]$(Agent.BuildDirectory)/jdk-11.0.17+8/Contents/Home"
     echo "##vso[task.setvariable variable=TESTIMAGE_PATH;]$(Agent.BuildDirectory)/jdk-11.0.17+8-test-image"
   displayName: Set JDK variables
+
+# - bash: |
+#     echo "##vso[task.setvariable variable=TEST_JDK_HOME;]$(Agent.BuildDirectory)/jdk-11.0.17+8"
+#     echo "##vso[task.setvariable variable=TESTIMAGE_PATH;]$(Agent.BuildDirectory)/jdk-11.0.17+8-test-image"
+#   displayName: Set JDK variables
 
 - bash: |
     git clone --depth 1 -b v0.9.5-release https://github.com/adoptium/aqa-tests.git && \
     cd aqa-tests/ && \
     ./get.sh && \
-    ./compile.sh
+    ./compile.sh && \
+    cd TKG/ && \
+    make ${{ parameters.target }}
   displayName: Clone aqa-tests
   env:
     USE_TESTENV_PROPERTIES: true
@@ -63,3 +72,11 @@ steps:
     DISPLAY: ":1"
     JDK_IMPL: hotspot
 
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: "$(Agent.BuildDirectory)/aqa-tests/TKG/"
+    artifactName: "TKG-results"
+    publishLocation: "pipeline"
+    parallel: true
+  displayName: "publish TAP report artifact"
+  condition: succeededOrFailed()
